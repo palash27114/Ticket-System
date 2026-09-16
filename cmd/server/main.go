@@ -22,8 +22,8 @@ import (
 
 func main() {
 	cfg := config.LoadConfig()
-	if cfg.DeploymentMode == "serverless" {
-		log.Fatal("DEPLOYMENT_MODE=serverless must be deployed through a serverless handler (for example, Vercel api/index.go)")
+	if cfg.DeploymentMode != "local" && cfg.DeploymentMode != "vercel" {
+		log.Fatalf("unsupported DEPLOYMENT_MODE %q; use local or vercel", cfg.DeploymentMode)
 	}
 
 	app, err := application.New(context.Background(), cfg)
@@ -33,7 +33,7 @@ func main() {
 	defer app.Close()
 
 	addr := fmt.Sprintf("0.0.0.0:%s", cfg.Port)
-	log.Printf("Server listening on %s", addr)
+	log.Printf("Server listening on %s (mode: %s)", addr, cfg.DeploymentMode)
 	if err := app.Router.Run(addr); err != nil {
 		log.Fatalf("Server failed to run: %v", err)
 	}
