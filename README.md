@@ -4,6 +4,10 @@ A simple, clean, production-ready, Dockerized Go REST API for a ticket managemen
 
 ---
 
+
+## LIVE VIDEO DEMONSTRATION 
+LINK - (https://drive.google.com/file/d/1dHzx00bfrpk5XIAUnsQFPGopdCS8Dl0m/view?usp=sharing)
+
 ## Tech Stack
 
 - **Language:** Go (1.24 / 1.27)
