@@ -1,4 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "go"
+  "framework": "go",
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/swagger/index.html",
+      "permanent": false
+    }
+  ]
+
 }
