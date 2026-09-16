@@ -4,8 +4,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"ticket-system/internal/user"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
@@ -55,4 +56,3 @@ func (h *Handler) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, user.LoginResponse{Token: token})
 }
-

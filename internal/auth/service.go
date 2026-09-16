@@ -5,9 +5,10 @@ import (
 	"errors"
 	"strings"
 
-	"golang.org/x/crypto/bcrypt"
 	"ticket-system/internal/config"
 	"ticket-system/internal/user"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -67,4 +68,3 @@ func (s *Service) Login(ctx context.Context, req *user.LoginRequest) (string, er
 
 	return token, nil
 }
-

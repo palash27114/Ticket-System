@@ -20,3 +20,4 @@ CREATE TABLE IF NOT EXISTS tickets (
 );
 
 CREATE INDEX IF NOT EXISTS idx_tickets_user_id ON tickets(user_id);
+

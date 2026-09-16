@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
 	"ticket-system/internal/auth"
+
+	"github.com/gin-gonic/gin"
 )
 
 const (
@@ -48,4 +49,3 @@ func GetUserID(c *gin.Context) (int64, bool) {
 	userID, ok := val.(int64)
 	return userID, ok
 }
-

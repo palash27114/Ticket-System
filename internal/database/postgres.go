@@ -6,8 +6,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"ticket-system/migrations"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // Connect initializes and returns a PostgreSQL connection pool.
