@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
 	"ticket-system/internal/middleware"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
@@ -17,6 +18,19 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
+// Create godoc
+// @Summary Create a new ticket
+// @Description Create a new ticket for the authenticated user with initial status 'open'
+// @Tags Tickets
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body CreateTicketRequest true "Ticket Details"
+// @Success 201 {object} Ticket
+// @Failure 400 {object} map[string]string "Invalid input"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /tickets [post]
 func (h *Handler) Create(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
@@ -43,6 +57,16 @@ func (h *Handler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, ticket)
 }
 
+// List godoc
+// @Summary List user's tickets
+// @Description List all tickets belonging to the authenticated user ordered by created_at DESC
+// @Tags Tickets
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} Ticket
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /tickets [get]
 func (h *Handler) List(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
@@ -59,6 +83,18 @@ func (h *Handler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, tickets)
 }
 
+// GetByID godoc
+// @Summary Get ticket by ID
+// @Description Get a specific ticket belonging to the authenticated user by ticket ID
+// @Tags Tickets
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Ticket ID"
+// @Success 200 {object} Ticket
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "Ticket not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /tickets/{id} [get]
 func (h *Handler) GetByID(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
@@ -86,6 +122,21 @@ func (h *Handler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, ticket)
 }
 
+// UpdateStatus godoc
+// @Summary Update ticket status
+// @Description Update the status of a ticket belonging to the authenticated user following the state machine: open -> in_progress -> closed
+// @Tags Tickets
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Ticket ID"
+// @Param request body UpdateStatusRequest true "New Ticket Status"
+// @Success 200 {object} Ticket
+// @Failure 400 {object} map[string]string "Invalid status transition"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "Ticket not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /tickets/{id}/status [patch]
 func (h *Handler) UpdateStatus(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {

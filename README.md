@@ -8,6 +8,7 @@ A simple, clean, production-ready, Dockerized Go REST API for a ticket managemen
 
 - **Language:** Go (1.24 / 1.27)
 - **Web Framework:** [Gin](https://github.com/gin-gonic/gin)
+- **API Documentation:** [Swagger / OpenAPI](https://github.com/swaggo/gin-swagger) via Swagger UI
 - **Database:** PostgreSQL (v16)
 - **Database Driver / Connection Pool:** [pgx/v5](https://github.com/jackc/pgx/v5) (`pgxpool`)
 - **Authentication / Authorization:** [golang-jwt/jwt/v5](https://github.com/golang-jwt/jwt/v5)
@@ -19,6 +20,7 @@ A simple, clean, production-ready, Dockerized Go REST API for a ticket managemen
 
 ## Features
 
+- **Interactive Swagger UI:** Test all endpoints (`/health`, `/auth/*`, `/tickets/*`) directly in the browser with authorization support at `/swagger`.
 - **User Registration & Login:** Secure authentication with bcrypt hashed passwords and JWT token issuance.
 - **Strict Ownership Isolation:** Authenticated users can only create, list, retrieve, and update their own tickets. Accessing or updating another user's ticket returns `404 Not Found` to prevent information leakage.
 - **Ticket Status State Machine:** Tickets strictly follow the linear flow:
@@ -69,6 +71,10 @@ ticket-system/
 │   ├── auth_test.go             # Auth unit and integration tests
 │   ├── ticket_test.go           # Ticket CRUD & state machine transition tests
 │   └── ownership_test.go        # Multi-user authorization & isolation tests
+├── docs/                        # Auto-generated Swagger / OpenAPI specs
+│   ├── docs.go
+│   ├── swagger.json
+│   └── swagger.yaml
 ├── Dockerfile                   # Multi-stage production container build
 ├── docker-compose.yml           # Docker Compose dev environment (API + PostgreSQL)
 ├── .env.example                 # Sample environment variables
@@ -77,6 +83,30 @@ ticket-system/
 ├── go.sum
 └── README.md
 ```
+
+---
+
+## Swagger UI (Interactive API Testing)
+
+Once the server is running, open your browser and navigate to:
+```text
+http://localhost:8080/swagger
+```
+or
+```text
+http://localhost:8080/swagger/index.html
+```
+
+### How to test protected endpoints in Swagger:
+1. Use `POST /auth/register` to create an account.
+2. Use `POST /auth/login` to authenticate and copy the returned `token`.
+3. Click the green **Authorize** button at the top right of the Swagger UI page.
+4. In the value input, enter:
+   ```text
+   Bearer <your_token>
+   ```
+5. Click **Authorize** and then **Close**.
+6. You can now execute and test all protected `/tickets` endpoints directly from Swagger!
 
 ---
 

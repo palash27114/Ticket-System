@@ -3,17 +3,33 @@ package server
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	_ "ticket-system/docs"
 	"ticket-system/internal/auth"
 	"ticket-system/internal/middleware"
 	"ticket-system/internal/ticket"
+
+	"github.com/gin-gonic/gin"
 )
 
 // SetupRouter initializes Gin router with all application routes and middleware.
 func SetupRouter(authHandler *auth.Handler, ticketHandler *ticket.Handler, jwtSecret string) *gin.Engine {
 	r := gin.Default()
 
-	// Health check endpoint (No authentication)
+	// Swagger UI documentation
+	r.GET("/swagger", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
+	})
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// Health godoc
+	// @Summary Health check
+	// @Description Returns the health status of the API server
+	// @Tags Health
+	// @Produce json
+	// @Success 200 {object} map[string]string "status: ok"
+	// @Router /health [get]
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "ok",

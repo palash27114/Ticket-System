@@ -13,6 +13,17 @@ import (
 	"ticket-system/internal/user"
 )
 
+// @title Ticket System API
+// @version 1.0
+// @description REST API for Backend Intern Ticket System with JWT authentication and ticket status state machine.
+// @host localhost:8080
+// @BasePath /
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+
 func main() {
 	cfg := config.LoadConfig()
 

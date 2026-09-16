@@ -8,9 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"ticket-system/internal/auth"
 	"ticket-system/internal/user"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func TestHealthEndpoint(t *testing.T) {
@@ -264,5 +265,18 @@ func TestAuthMiddleware_ExpiredJWT(t *testing.T) {
 
 	if w.Code != http.StatusUnauthorized {
 		t.Fatalf("expected status 401 Unauthorized for expired token, got %d", w.Code)
+	}
+}
+
+func TestSwaggerEndpoint(t *testing.T) {
+	router, _ := setupTestServer()
+
+	req, _ := http.NewRequest(http.MethodGet, "/swagger/index.html", nil)
+	req.RequestURI = "/swagger/index.html"
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected status 200 OK for /swagger/index.html, got %d", w.Code)
 	}
 }

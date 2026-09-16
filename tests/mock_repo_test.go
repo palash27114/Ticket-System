@@ -6,12 +6,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"ticket-system/internal/auth"
 	"ticket-system/internal/config"
 	"ticket-system/internal/server"
 	"ticket-system/internal/ticket"
 	"ticket-system/internal/user"
+
+	"github.com/gin-gonic/gin"
 )
 
 type InMemoryUserRepo struct {

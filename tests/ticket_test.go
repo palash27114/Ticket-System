@@ -8,9 +8,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	"ticket-system/internal/ticket"
 	"ticket-system/internal/user"
+
+	"github.com/gin-gonic/gin"
 )
 
 func registerAndGetToken(t *testing.T, router *gin.Engine, name, email, password string) string {
