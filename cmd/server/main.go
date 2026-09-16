@@ -12,7 +12,6 @@ import (
 // @title Ticket System API
 // @version 1.0
 // @description REST API for Backend Intern Ticket System with JWT authentication and ticket status state machine.
-// @host localhost:8080
 // @BasePath /
 
 // @securityDefinitions.apikey BearerAuth

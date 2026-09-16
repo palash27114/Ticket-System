@@ -81,7 +81,6 @@ definitions:
       name:
         type: string
     type: object
-host: localhost:8080
 info:
   contact: {}
   description: REST API for Backend Intern Ticket System with JWT authentication and
