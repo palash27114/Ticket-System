@@ -9,6 +9,7 @@ import (
 )
 
 type Config struct {
+	DeploymentMode     string
 	Port               string
 	DatabaseURL        string
 	JWTSecret          string
@@ -22,6 +23,7 @@ func LoadConfig() *Config {
 	}
 
 	port := getEnv("PORT", "8080")
+	deploymentMode := getEnv("DEPLOYMENT_MODE", "local")
 	dbURL := getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/ticketdb?sslmode=disable")
 	jwtSecret := getEnv("JWT_SECRET", "change-me")
 
@@ -32,6 +34,7 @@ func LoadConfig() *Config {
 	}
 
 	return &Config{
+		DeploymentMode:     deploymentMode,
 		Port:               port,
 		DatabaseURL:        dbURL,
 		JWTSecret:          jwtSecret,

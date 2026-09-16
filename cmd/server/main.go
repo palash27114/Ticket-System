@@ -5,13 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"ticket-system/internal/auth"
+	"ticket-system/internal/application"
 	"ticket-system/internal/config"
-	"ticket-system/internal/database"
-	"ticket-system/internal/health"
-	"ticket-system/internal/server"
-	"ticket-system/internal/ticket"
-	"ticket-system/internal/user"
 )
 
 // @title Ticket System API
@@ -27,33 +22,19 @@ import (
 
 func main() {
 	cfg := config.LoadConfig()
+	if cfg.DeploymentMode == "serverless" {
+		log.Fatal("DEPLOYMENT_MODE=serverless must be deployed through a serverless handler (for example, Vercel api/index.go)")
+	}
 
-	log.Printf("Connecting to database at %s...", cfg.DatabaseURL)
-	pool, err := database.Connect(cfg.DatabaseURL)
+	app, err := application.New(context.Background(), cfg)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf("Failed to initialize application: %v", err)
 	}
-	defer pool.Close()
-
-	if err := database.Migrate(context.Background(), pool); err != nil {
-		log.Fatalf("Failed to run migrations: %v", err)
-	}
-
-	userRepo := user.NewPostgresRepository(pool)
-	ticketRepo := ticket.NewPostgresRepository(pool)
-
-	healthHandler := health.NewHandler(pool)
-	authService := auth.NewService(userRepo, cfg)
-	ticketService := ticket.NewService(ticketRepo)
-
-	authHandler := auth.NewHandler(authService)
-	ticketHandler := ticket.NewHandler(ticketService)
-
-	r := server.SetupRouter(healthHandler, authHandler, ticketHandler, cfg.JWTSecret)
+	defer app.Close()
 
 	addr := fmt.Sprintf("0.0.0.0:%s", cfg.Port)
 	log.Printf("Server listening on %s", addr)
-	if err := r.Run(addr); err != nil {
+	if err := app.Router.Run(addr); err != nil {
 		log.Fatalf("Server failed to run: %v", err)
 	}
 }

@@ -363,6 +363,26 @@ docker run -p 8080:8080 \
 
 ---
 
+## Vercel Deployment
+
+The API supports both local containers and Vercel serverless deployment through the `DEPLOYMENT_MODE` environment variable.
+
+- Docker Compose uses `DEPLOYMENT_MODE=local` and runs the persistent Gin server.
+- Vercel uses `DEPLOYMENT_MODE=serverless`; [`api/index.go`](api/index.go) exposes the same router as a serverless handler.
+
+To deploy to Vercel, import this repository and configure these production environment variables:
+
+```text
+DEPLOYMENT_MODE=serverless
+DATABASE_URL=<hosted PostgreSQL connection string>
+JWT_SECRET=<long random secret>
+JWT_EXPIRATION_HOURS=24
+```
+
+Use a hosted PostgreSQL provider such as Neon or Supabase. Do not use the local Docker `DATABASE_URL` in Vercel.
+
+---
+
 ## Health Check
 
 Verify application availability by pinging the health check endpoint:
