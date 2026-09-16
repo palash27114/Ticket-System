@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"ticket-system/internal/middleware"
 
@@ -126,13 +127,12 @@ func (h *Handler) GetByID(c *gin.Context) {
 // @Summary Update ticket status
 // @Description Update the status of a ticket belonging to the authenticated user following the state machine: open -> in_progress -> closed
 // @Tags Tickets
-// @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Ticket ID"
-// @Param request body UpdateStatusRequest true "New Ticket Status"
+// @Param status query string true "New ticket status" Enums(open,in_progress,closed)
 // @Success 200 {object} Ticket
-// @Failure 400 {object} map[string]string "Invalid status transition"
+// @Failure 400 {object} map[string]string "Invalid status or status transition"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 404 {object} map[string]string "Ticket not found"
 // @Failure 500 {object} map[string]string "Internal server error"
@@ -151,13 +151,13 @@ func (h *Handler) UpdateStatus(c *gin.Context) {
 		return
 	}
 
-	var req UpdateStatusRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	newStatus := strings.TrimSpace(c.Query("status"))
+	if !IsValidStatus(newStatus) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "status must be one of: open, in_progress, closed"})
 		return
 	}
 
-	ticket, err := h.service.UpdateStatus(c.Request.Context(), ticketID, userID, req.Status)
+	ticket, err := h.service.UpdateStatus(c.Request.Context(), ticketID, userID, newStatus)
 	if err != nil {
 		if errors.Is(err, ErrTicketNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})
@@ -165,6 +165,10 @@ func (h *Handler) UpdateStatus(c *gin.Context) {
 		}
 		if errors.Is(err, ErrInvalidStatusTransition) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid status transition"})
+			return
+		}
+		if errors.Is(err, ErrTicketClosed) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "ticket is closed and cannot be updated"})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update ticket status"})

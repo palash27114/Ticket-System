@@ -9,29 +9,79 @@ import (
 	"time"
 
 	"ticket-system/internal/auth"
+	"ticket-system/internal/health"
 	"ticket-system/internal/user"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func TestHealthEndpoint(t *testing.T) {
+func TestHealthEndpoint_AllServices(t *testing.T) {
 	router, _ := setupTestServer()
 
 	req, _ := http.NewRequest(http.MethodGet, "/health", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
+	// When DB pool is nil, we get 200 with status=ok for api and status=unknown for database
 	if w.Code != http.StatusOK {
-		t.Fatalf("expected status 200 OK, got %d", w.Code)
+		t.Fatalf("expected status 200 OK, got %d body: %s", w.Code, w.Body.String())
 	}
 
-	var body map[string]string
+	var body health.HealthResponse
 	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+		t.Fatalf("failed to decode health response: %v", err)
+	}
+
+	if body.Status != "ok" {
+		t.Fatalf("expected overall status 'ok', got %q", body.Status)
+	}
+
+	apiSvc, ok := body.Services["api"]
+	if !ok {
+		t.Fatal("expected 'api' key in services")
+	}
+	if apiSvc.Status != "ok" {
+		t.Fatalf("expected api status 'ok', got %q", apiSvc.Status)
+	}
+
+	dbSvc, ok := body.Services["database"]
+	if !ok {
+		t.Fatal("expected 'database' key in services")
+	}
+	// With nil pool, database should be "unknown" (no connection configured)
+	if dbSvc.Status != "unknown" {
+		t.Fatalf("expected database status 'unknown' when pool is nil, got %q", dbSvc.Status)
+	}
+}
+
+func TestHealthEndpoint_StructureValid(t *testing.T) {
+	router, _ := setupTestServer()
+
+	req, _ := http.NewRequest(http.MethodGet, "/health", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	var raw map[string]interface{}
+	if err := json.Unmarshal(w.Body.Bytes(), &raw); err != nil {
 		t.Fatalf("failed to decode response: %v", err)
 	}
 
-	if body["status"] != "ok" {
-		t.Fatalf("expected status 'ok', got %q", body["status"])
+	if _, ok := raw["status"]; !ok {
+		t.Fatal("response must contain 'status' field")
+	}
+	if _, ok := raw["services"]; !ok {
+		t.Fatal("response must contain 'services' field")
+	}
+
+	services, ok := raw["services"].(map[string]interface{})
+	if !ok {
+		t.Fatal("'services' must be an object")
+	}
+	if _, ok := services["api"]; !ok {
+		t.Fatal("'services' must contain 'api' key")
+	}
+	if _, ok := services["database"]; !ok {
+		t.Fatal("'services' must contain 'database' key")
 	}
 }
 
@@ -199,6 +249,11 @@ func TestLogin_WrongPassword(t *testing.T) {
 	if wLogin.Code != http.StatusUnauthorized {
 		t.Fatalf("expected status 401 Unauthorized, got %d", wLogin.Code)
 	}
+	var resp map[string]string
+	_ = json.Unmarshal(wLogin.Body.Bytes(), &resp)
+	if resp["error"] != "password incorrect" {
+		t.Fatalf("expected password error, got %q", resp["error"])
+	}
 }
 
 func TestLogin_NonexistentUser(t *testing.T) {
@@ -216,6 +271,11 @@ func TestLogin_NonexistentUser(t *testing.T) {
 
 	if wLogin.Code != http.StatusUnauthorized {
 		t.Fatalf("expected status 401 Unauthorized for nonexistent user, got %d", wLogin.Code)
+	}
+	var resp map[string]string
+	_ = json.Unmarshal(wLogin.Body.Bytes(), &resp)
+	if resp["error"] != "please register first" {
+		t.Fatalf("expected registration prompt, got %q", resp["error"])
 	}
 }
 

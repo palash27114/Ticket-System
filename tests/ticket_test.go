@@ -124,11 +124,8 @@ func TestStatusStateMachine_Transitions(t *testing.T) {
 
 	// Helper to patch status
 	patchStatus := func(ticketID int64, newStatus string) (int, ticket.Ticket) {
-		p := ticket.UpdateStatusRequest{Status: newStatus}
-		b, _ := json.Marshal(p)
-		r, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/tickets/%d/status", ticketID), bytes.NewBuffer(b))
+		r, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/tickets/%d/status?status=%s", ticketID, newStatus), nil)
 		r.Header.Set("Authorization", "Bearer "+token)
-		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, r)
 		var updated ticket.Ticket

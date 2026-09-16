@@ -58,7 +58,7 @@ func (h *Handler) Register(c *gin.Context) {
 // @Param request body user.LoginRequest true "User Login Credentials"
 // @Success 200 {object} user.LoginResponse
 // @Failure 400 {object} map[string]string "Invalid request payload"
-// @Failure 401 {object} map[string]string "Invalid credentials"
+// @Failure 401 {object} map[string]string "Email is not registered or password is incorrect"
 // @Failure 500 {object} map[string]string "Internal server error"
 // @Router /auth/login [post]
 func (h *Handler) Login(c *gin.Context) {
@@ -70,8 +70,12 @@ func (h *Handler) Login(c *gin.Context) {
 
 	token, err := h.service.Login(c.Request.Context(), &req)
 	if err != nil {
+		if errors.Is(err, ErrUserNotRegistered) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "please register first"})
+			return
+		}
 		if errors.Is(err, ErrInvalidCredentials) {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "password incorrect"})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to authenticate"})

@@ -178,7 +178,7 @@ Authorization: Bearer <token>
 - **Status Codes:**
   - `200 OK`: Successful login with valid JWT returned.
   - `400 Bad Request`: Invalid request payload.
-  - `401 Unauthorized`: Invalid email or password.
+  - `401 Unauthorized`: `please register first` when the email is not registered, or `password incorrect` when the password does not match.
 
 ---
 
@@ -266,14 +266,9 @@ Authorization: Bearer <token>
 
 ### 7. Update Ticket Status
 - **Method:** `PATCH`
-- **URL:** `/tickets/:id/status`
+- **URL:** `/tickets/:id/status?status=in_progress`
 - **Authentication:** Bearer Token required
-- **Request Example:**
-  ```json
-  {
-    "status": "in_progress"
-  }
-  ```
+- **Query parameter:** `status` (required) — one of `open`, `in_progress`, or `closed`.
 - **Response Example (200 OK):**
   ```json
   {
@@ -287,7 +282,7 @@ Authorization: Bearer <token>
   ```
 - **Status Codes:**
   - `200 OK`: Status successfully updated.
-  - `400 Bad Request`: Invalid transition attempted (e.g. `open -> closed`, `closed -> open`, or same state).
+  - `400 Bad Request`: Invalid status, invalid transition, or an attempt to update a closed ticket.
   - `401 Unauthorized`: Missing or invalid JWT.
   - `404 Not Found`: Ticket does not exist or does not belong to the authenticated user (`{"error": "ticket not found"}`).
 

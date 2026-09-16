@@ -31,10 +31,6 @@ type CreateTicketRequest struct {
 	Description string `json:"description" binding:"required"`
 }
 
-type UpdateStatusRequest struct {
-	Status string `json:"status" binding:"required"`
-}
-
 // IsValidStatus checks if the given status is a recognized ticket status.
 func IsValidStatus(status string) bool {
 	return status == StatusOpen || status == StatusInProgress || status == StatusClosed

@@ -8,6 +8,7 @@ import (
 	"ticket-system/internal/auth"
 	"ticket-system/internal/config"
 	"ticket-system/internal/database"
+	"ticket-system/internal/health"
 	"ticket-system/internal/server"
 	"ticket-system/internal/ticket"
 	"ticket-system/internal/user"
@@ -41,13 +42,14 @@ func main() {
 	userRepo := user.NewPostgresRepository(pool)
 	ticketRepo := ticket.NewPostgresRepository(pool)
 
+	healthHandler := health.NewHandler(pool)
 	authService := auth.NewService(userRepo, cfg)
 	ticketService := ticket.NewService(ticketRepo)
 
 	authHandler := auth.NewHandler(authService)
 	ticketHandler := ticket.NewHandler(ticketService)
 
-	r := server.SetupRouter(authHandler, ticketHandler, cfg.JWTSecret)
+	r := server.SetupRouter(healthHandler, authHandler, ticketHandler, cfg.JWTSecret)
 
 	addr := fmt.Sprintf("0.0.0.0:%s", cfg.Port)
 	log.Printf("Server listening on %s", addr)

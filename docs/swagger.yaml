@@ -1,5 +1,21 @@
 basePath: /
 definitions:
+  health.HealthResponse:
+    properties:
+      services:
+        additionalProperties:
+          $ref: '#/definitions/health.ServiceStatus'
+        type: object
+      status:
+        type: string
+    type: object
+  health.ServiceStatus:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
   ticket.CreateTicketRequest:
     properties:
       description:
@@ -26,13 +42,6 @@ definitions:
         type: string
       user_id:
         type: integer
-    type: object
-  ticket.UpdateStatusRequest:
-    properties:
-      status:
-        type: string
-    required:
-    - status
     type: object
   user.LoginRequest:
     properties:
@@ -106,7 +115,7 @@ paths:
               type: string
             type: object
         "401":
-          description: Invalid credentials
+          description: Email is not registered or password is incorrect
           schema:
             additionalProperties:
               type: string
@@ -160,6 +169,24 @@ paths:
       summary: Register a new user
       tags:
       - Authentication
+  /health:
+    get:
+      description: Returns the health status of the API server and all dependent services
+        (PostgreSQL database).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: All services healthy
+          schema:
+            $ref: '#/definitions/health.HealthResponse'
+        "207":
+          description: One or more services degraded
+          schema:
+            $ref: '#/definitions/health.HealthResponse'
+      summary: Health check
+      tags:
+      - Health
   /tickets:
     get:
       description: List all tickets belonging to the authenticated user ordered by
@@ -274,8 +301,6 @@ paths:
       - Tickets
   /tickets/{id}/status:
     patch:
-      consumes:
-      - application/json
       description: 'Update the status of a ticket belonging to the authenticated user
         following the state machine: open -> in_progress -> closed'
       parameters:
@@ -284,12 +309,15 @@ paths:
         name: id
         required: true
         type: integer
-      - description: New Ticket Status
-        in: body
-        name: request
+      - description: New ticket status
+        enum:
+        - open
+        - in_progress
+        - closed
+        in: query
+        name: status
         required: true
-        schema:
-          $ref: '#/definitions/ticket.UpdateStatusRequest'
+        type: string
       produces:
       - application/json
       responses:
@@ -298,7 +326,7 @@ paths:
           schema:
             $ref: '#/definitions/ticket.Ticket'
         "400":
-          description: Invalid status transition
+          description: Invalid status or status transition
           schema:
             additionalProperties:
               type: string

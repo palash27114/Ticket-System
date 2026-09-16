@@ -57,7 +57,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Invalid credentials",
+                        "description": "Email is not registered or password is incorrect",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -133,6 +133,32 @@ const docTemplate = `{
                             "additionalProperties": {
                                 "type": "string"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "Returns the health status of the API server and all dependent services (PostgreSQL database).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Health check",
+                "responses": {
+                    "200": {
+                        "description": "All services healthy",
+                        "schema": {
+                            "$ref": "#/definitions/health.HealthResponse"
+                        }
+                    },
+                    "207": {
+                        "description": "One or more services degraded",
+                        "schema": {
+                            "$ref": "#/definitions/health.HealthResponse"
                         }
                     }
                 }
@@ -317,9 +343,6 @@ const docTemplate = `{
                     }
                 ],
                 "description": "Update the status of a ticket belonging to the authenticated user following the state machine: open -\u003e in_progress -\u003e closed",
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -336,13 +359,16 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "New Ticket Status",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/ticket.UpdateStatusRequest"
-                        }
+                        "enum": [
+                            "open",
+                            "in_progress",
+                            "closed"
+                        ],
+                        "type": "string",
+                        "description": "New ticket status",
+                        "name": "status",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -353,7 +379,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid status transition",
+                        "description": "Invalid status or status transition",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -393,6 +419,31 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "health.HealthResponse": {
+            "type": "object",
+            "properties": {
+                "services": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/health.ServiceStatus"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "health.ServiceStatus": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "ticket.CreateTicketRequest": {
             "type": "object",
             "required": [
@@ -431,17 +482,6 @@ const docTemplate = `{
                 },
                 "user_id": {
                     "type": "integer"
-                }
-            }
-        },
-        "ticket.UpdateStatusRequest": {
-            "type": "object",
-            "required": [
-                "status"
-            ],
-            "properties": {
-                "status": {
-                    "type": "string"
                 }
             }
         },

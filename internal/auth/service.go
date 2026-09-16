@@ -12,7 +12,8 @@ import (
 )
 
 var (
-	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrInvalidCredentials = errors.New("password incorrect")
+	ErrUserNotRegistered  = errors.New("please register first")
 )
 
 type Service struct {
@@ -54,6 +55,9 @@ func (s *Service) Login(ctx context.Context, req *user.LoginRequest) (string, er
 	email := strings.ToLower(strings.TrimSpace(req.Email))
 	u, err := s.userRepo.GetByEmail(ctx, email)
 	if err != nil {
+		if errors.Is(err, user.ErrUserNotFound) {
+			return "", ErrUserNotRegistered
+		}
 		return "", ErrInvalidCredentials
 	}
 

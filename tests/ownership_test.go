@@ -58,11 +58,8 @@ func TestOwnership_MultiUserIsolation(t *testing.T) {
 	}
 
 	// 4. User B attempts to modify User A's Ticket #1 via PATCH /tickets/:id/status
-	patchPayload := ticket.UpdateStatusRequest{Status: "in_progress"}
-	bodyPatch, _ := json.Marshal(patchPayload)
-	reqBPatch, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/tickets/%d/status", ticketAID), bytes.NewBuffer(bodyPatch))
+	reqBPatch, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/tickets/%d/status?status=in_progress", ticketAID), nil)
 	reqBPatch.Header.Set("Authorization", "Bearer "+tokenB)
-	reqBPatch.Header.Set("Content-Type", "application/json")
 	wBPatch := httptest.NewRecorder()
 	router.ServeHTTP(wBPatch, reqBPatch)
 
@@ -100,9 +97,8 @@ func TestOwnership_MultiUserIsolation(t *testing.T) {
 	}
 
 	// 7. User A updates their own Ticket #1 status via PATCH /tickets/:id/status
-	reqAPatch, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/tickets/%d/status", ticketAID), bytes.NewBuffer(bodyPatch))
+	reqAPatch, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/tickets/%d/status?status=in_progress", ticketAID), nil)
 	reqAPatch.Header.Set("Authorization", "Bearer "+tokenA)
-	reqAPatch.Header.Set("Content-Type", "application/json")
 	wAPatch := httptest.NewRecorder()
 	router.ServeHTTP(wAPatch, reqAPatch)
 

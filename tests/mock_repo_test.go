@@ -8,6 +8,7 @@ import (
 
 	"ticket-system/internal/auth"
 	"ticket-system/internal/config"
+	"ticket-system/internal/health"
 	"ticket-system/internal/server"
 	"ticket-system/internal/ticket"
 	"ticket-system/internal/user"
@@ -168,7 +169,9 @@ func setupTestServer() (*gin.Engine, *config.Config) {
 
 	authHandler := auth.NewHandler(authService)
 	ticketHandler := ticket.NewHandler(ticketService)
+	// nil pool: no real DB available in unit tests — health handler handles nil gracefully
+	healthHandler := health.NewHandler(nil)
 
-	r := server.SetupRouter(authHandler, ticketHandler, cfg.JWTSecret)
+	r := server.SetupRouter(healthHandler, authHandler, ticketHandler, cfg.JWTSecret)
 	return r, cfg
 }

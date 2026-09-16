@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrInvalidInput = errors.New("title and description cannot be empty")
+	ErrTicketClosed = errors.New("ticket is closed and cannot be updated")
 )
 
 type Service struct {
@@ -53,6 +54,9 @@ func (s *Service) UpdateStatus(ctx context.Context, id int64, userID int64, newS
 	currentTicket, err := s.repo.GetByIDAndUserID(ctx, id, userID)
 	if err != nil {
 		return nil, err
+	}
+	if currentTicket.Status == StatusClosed {
+		return nil, ErrTicketClosed
 	}
 
 	// Validate state machine transition
